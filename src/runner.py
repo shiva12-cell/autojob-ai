@@ -333,11 +333,16 @@ def main():
     # indeed-login command
     subparsers.add_parser("indeed-login", help="Open browser to log into Indeed once and save session")
 
-    # dashboard command
-    dashboard_parser = subparsers.add_parser("dashboard", help="Launch the HTML Web Dashboard with Auto Apply trigger and 4-hour scheduler")
+    # dashboard & web commands
+    dashboard_parser = subparsers.add_parser("dashboard", help="Launch the HTML Web Dashboard with Auto Apply trigger")
     dashboard_parser.add_argument("--port", type=int, default=8000, help="Web server port (default 8000)")
     dashboard_parser.add_argument("--host", default="127.0.0.1", help="Web server host")
     dashboard_parser.add_argument("--no-browser", action="store_true", help="Do not automatically open browser")
+
+    web_parser = subparsers.add_parser("web", help="Alias for dashboard: launch the HTML Web Dashboard")
+    web_parser.add_argument("--port", type=int, default=8000, help="Web server port (default 8000)")
+    web_parser.add_argument("--host", default="127.0.0.1", help="Web server host")
+    web_parser.add_argument("--no-browser", action="store_true", help="Do not automatically open browser")
 
     # daemon command
     daemon_parser = subparsers.add_parser("daemon", help="Run background monitor to auto-update sheet periodically")
@@ -347,7 +352,7 @@ def main():
     args = parser.parse_args()
     cfg = get_config()
 
-    if args.command == "dashboard":
+    if args.command in ["dashboard", "web"]:
         import uvicorn
         import webbrowser
         port = args.port or 8000

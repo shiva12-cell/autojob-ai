@@ -1,6 +1,6 @@
 @echo off
 title Naukri Profile Daily Refresher - Boost Visibility
-cd /d "C:\Users\abcom\Downloads\Job"
+cd /d "%~dp0"
 echo ============================================================
 echo   Naukri.com Daily Activity Refresher (Resdex Algorithm)
 echo ============================================================

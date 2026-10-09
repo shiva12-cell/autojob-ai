@@ -6,7 +6,8 @@ google:
   # Path where user OAuth token is cached after first login
   token_file: "config/credentials/token.json"
   # Target Google Sheet ID (from the spreadsheet URL: https://docs.google.com/spreadsheets/d/<SHEET_ID>/edit)
-  spreadsheet_id: "1UGZpkrm5uTzCGfNM4K_1SfW-c50Dc-fSP-NwcNXR96g"
+  # Leave empty or set GOOGLE_SHEET_ID in .env
+  spreadsheet_id: ""
   # Title of the spreadsheet tab
   worksheet_name: "Job Applications"
   # Scopes required for Gmail and Google Sheets

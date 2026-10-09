@@ -54,7 +54,7 @@ class SkillMatcher:
         elif isinstance(raw_skills, str) and raw_skills:
             self.candidate_skills.update(s.lower().strip() for s in raw_skills.split(","))
 
-        # 3. Always enrich candidate skills with semantic equivalents & related analyst competencies
+        # 3. Enrich candidate skills with common semantic equivalents
         skill_expansions = {
             "power bi": ["bi", "business intelligence", "dashboard", "data visualization"],
             "tableau": ["bi", "dashboard", "data visualization"],
@@ -64,17 +64,28 @@ class SkillMatcher:
             "sql": ["querying", "etl", "database"],
             "excel": ["advanced excel", "reporting", "dashboard"],
             "business analysis": ["business analyst", "requirements gathering", "agile", "reporting", "user stories"],
+            "react": ["javascript", "frontend", "web development"],
+            "node.js": ["backend", "javascript", "express", "api"],
+            "devops": ["ci/cd", "docker", "kubernetes", "cloud"],
         }
-        for base, exp in skill_expansions.items():
+        for base, exp in list(skill_expansions.items()):
             if base in self.candidate_skills:
                 self.candidate_skills.update(exp)
 
-        # 4. Target domain skills for candidate's target roles (Data, BA, AI Product Owner, Product Management)
-        base_target_skills = [
-            "ai product owner", "product management", "product owner", "ai", "agile",
-            "business analyst", "business analysis"
-        ]
-        self.candidate_skills.update(base_target_skills)
+        # 4. If title, headline, or skills specify domain competencies, add target indicators
+        title_lower = (self.profile.personal_info.current_title or "").lower()
+        headline_lower = getattr(self.profile.personal_info, "headline", "") or ""
+        comb_title = f"{title_lower} {headline_lower.lower()}"
+        if any(w in comb_title for w in ["product", "owner", "manager", "pm"]):
+            self.candidate_skills.update(["product management", "product owner", "agile", "jira"])
+        if any(w in comb_title for w in ["business analyst", "ba"]):
+            self.candidate_skills.update(["business analyst", "business analysis", "requirements gathering"])
+
+        if any(s in self.candidate_skills for s in ["data analysis", "python", "analytics", "sql", "statistics", "ai"]):
+            self.candidate_skills.update([
+                "ai product owner", "product management", "product owner", "ai", "agile",
+                "business analyst", "business analysis"
+            ])
 
         # 5. Only if no candidate skills could be found anywhere, fallback to general defaults
         if not self.candidate_skills:
@@ -91,7 +102,10 @@ class SkillMatcher:
         """Identifies skills mentioned in job description or title."""
         found = set()
         lower_text = text.lower()
-        for skill in COMMON_ANALYST_SKILLS:
+        all_search_skills = set(COMMON_ANALYST_SKILLS).union(self.candidate_skills)
+        for skill in all_search_skills:
+            if not skill or len(skill.strip()) < 2:
+                continue
             pattern = rf"\b{re.escape(skill)}\b"
             if re.search(pattern, lower_text):
                 found.add(skill)

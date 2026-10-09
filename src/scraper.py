@@ -75,6 +75,8 @@ def scrape_naukri_live_jobs(
     sort_by: str = "relevance",
     start_page: Optional[int] = None,
     max_pages: int = 6,
+    session_file: Optional[Path] = None,
+    session_cookies: Optional[list] = None,
 ) -> List[Dict[str, Any]]:
     """
     Scrapes multiple pages of live job postings from Naukri using live filters:
@@ -113,11 +115,27 @@ def scrape_naukri_live_jobs(
         )
         context.add_init_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
 
-        if NAUKRI_SESSION_FILE.exists():
+        loaded_cookies = []
+        if session_cookies:
+            loaded_cookies = session_cookies
+        elif session_file and Path(session_file).exists():
+            try:
+                with open(session_file, "r", encoding="utf-8") as f:
+                    st = json.load(f)
+                    loaded_cookies = st.get("cookies", [])
+            except Exception:
+                pass
+        elif NAUKRI_SESSION_FILE.exists():
             try:
                 with open(NAUKRI_SESSION_FILE, "r") as f:
                     st = json.load(f)
-                    context.add_cookies(st.get("cookies", []))
+                    loaded_cookies = st.get("cookies", [])
+            except Exception:
+                pass
+
+        if loaded_cookies:
+            try:
+                context.add_cookies(loaded_cookies)
             except Exception:
                 pass
 
@@ -157,9 +175,8 @@ def scrape_naukri_live_jobs(
         if sort_by == "date":
             extra_params.append("sortBy=date")
 
-        # Salary filter on Naukri if specific range selected
-        if min_lpa > 0 and max_lpa < 90:
-            extra_params.append(f"ctcFilter={int(min_lpa)}to{int(max_lpa)}")
+        # Note: Do not append invalid ctcFilter to Naukri query URL as it breaks Naukri's search
+        # and returns 0 jobs. Salary requirements are evaluated accurately in the candidate matching engine.
 
         param_str = ("&" + "&".join(extra_params)) if extra_params else ""
 

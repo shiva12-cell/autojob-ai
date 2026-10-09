@@ -27,7 +27,18 @@ resumes/*.docx
 naukri_*.png
 scratch_*.png
 scratch/
+config/logs/
+config/data/
+
+# Databases & Tracker Storage
+data/
+*.db
+*.sqlite*
+Job_Applications_Tracker*.xlsx
+*.xlsx
+chrome_login_profile/
 
 # OS
 .DS_Store
 Thumbs.db
+

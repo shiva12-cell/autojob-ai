@@ -1,6 +1,4 @@
-# AutoJob AI & Streamlit Dashboard Dependencies
-streamlit>=1.35.0
-plotly>=5.20.0
+# AutoJob AI Web Portal Dependencies
 pandas>=2.0.0
 openpyxl>=3.1.2
 PyYAML>=6.0.0
@@ -15,3 +13,4 @@ google-auth-oauthlib>=1.1.0
 gspread>=6.0.0
 pypdf>=4.0.0
 python-multipart>=0.0.9
+psycopg2-binary>=2.9.9

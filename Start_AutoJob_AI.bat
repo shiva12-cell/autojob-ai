@@ -1,6 +1,6 @@
 @echo off
 title AutoJob AI - 30-Minute Autonomous Copilot
-cd /d "C:\Users\abcom\Downloads\Job"
+cd /d "%~dp0"
 echo ============================================================
 echo   Starting AutoJob AI Web Dashboard & 30-Min Autopilot...
 echo ============================================================

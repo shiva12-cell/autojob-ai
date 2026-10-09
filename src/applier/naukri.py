@@ -93,28 +93,52 @@ class NaukriApplier(BaseApplier):
                 import sys
                 import time
 
-                # Smart auto-detection loop: watches for login cookies or navigation to home/dashboard
-                # so users clicking "Sync Naukri Session" in UI don't get stuck if stdin isn't hooked to a terminal!
                 safe_print("[Naukri] Waiting for authentication... (Log into your Naukri account in the opened window)")
                 logged_in = False
                 for _ in range(150):  # Wait up to 5 minutes
                     time.sleep(2)
                     try:
+                        if page.is_closed():
+                            safe_print("[Naukri] Browser window was closed by user.")
+                            break
+
                         curr_url = page.url.lower()
                         # Detect successful redirect away from login page
-                        if any(marker in curr_url for marker in ["my.naukri.com", "homepage", "naukri.com/mn_", "user/home", "naukri.com/profile"]):
-                            safe_print(f"[Naukri] Login detected on URL: {page.url}!")
-                            logged_in = True
-                            break
+                        if "nlogin" not in curr_url and ("naukri.com" in curr_url or "my.naukri.com" in curr_url):
+                            if any(marker in curr_url for marker in ["homepage", "user/home", "profile", "mnjuser", "mynaukri"]) or curr_url.rstrip("/").endswith("naukri.com"):
+                                safe_print(f"[Naukri] Login detected on URL: {page.url}!")
+                                logged_in = True
+                                break
+
                         # Also check if profile or user avatar exists in DOM
-                        if page.query_selector(".user-info, .nI-gNb-drawer__header, .profile-summary, a[href*='profile']"):
+                        if page.query_selector(".user-info, .nI-gNb-drawer__header, .profile-summary, a[href*='profile'], .view-profile-wrapper, .user-name"):
                             safe_print("[Naukri] Profile session elements detected!")
                             logged_in = True
                             break
-                    except Exception:
-                        break
 
-                page.wait_for_timeout(3000)
+                        # Also check if authentication cookies exist in browser context
+                        cookies = context.cookies()
+                        cookie_names = {c.get('name', '').lower() for c in cookies}
+                        if any(auth_c in cookie_names for auth_c in ['nauk_sess', 'isloggedin', 'user_id', 'sur', 'nprofile']):
+                            safe_print("[Naukri] Session cookies detected in browser context!")
+                            logged_in = True
+                            break
+
+                    except Exception:
+                        # Page might be navigating or temporarily busy, continue loop unless closed
+                        try:
+                            if page.is_closed():
+                                break
+                        except Exception:
+                            break
+                        continue
+
+                try:
+                    if not page.is_closed():
+                        page.wait_for_timeout(3000)
+                except Exception:
+                    pass
+
                 safe_print("[Naukri] Saving session state...")
                 self.session_file.parent.mkdir(parents=True, exist_ok=True)
                 context.storage_state(path=str(self.session_file))
@@ -123,10 +147,20 @@ class NaukriApplier(BaseApplier):
             except Exception as e:
                 safe_print(f"[Naukri] Saving state before exit: {e}")
                 self.session_file.parent.mkdir(parents=True, exist_ok=True)
-                context.storage_state(path=str(self.session_file))
+                try:
+                    context.storage_state(path=str(self.session_file))
+                except Exception:
+                    pass
                 return True
             finally:
-                browser.close()
+                try:
+                    browser.close()
+                except Exception:
+                    pass
+
+    def apply_to_job(self, url: str, submit: bool = True, apply_mode: str = "all", **kwargs) -> Optional[JobApplication]:
+        """Convenience alias for apply()."""
+        return self.apply(url=url, dry_run=not submit, apply_mode=apply_mode, **kwargs)
 
     def apply(self, url: str, dry_run: bool = True, apply_mode: str = "all", **kwargs) -> Optional[JobApplication]:
         safe_print(f"\n[Naukri] Launching applier for: {url}")

@@ -55,7 +55,7 @@ class SelfNotifier:
         app: JobApplication,
         match_pct: float = 70.0,
         matched_skills: Optional[List[str]] = None,
-        google_sheet_url: str = "https://docs.google.com/spreadsheets/d/1UGZpkrm5uTzCGfNM4K_1SfW-c50Dc-fSP-NwcNXR96g"
+        google_sheet_url: str = ""
     ) -> bool:
         """
         Sends an automated notification email to the candidate and tags it with the 'Job Applied' label.
@@ -88,7 +88,7 @@ Your AutoJob AI Copilot just submitted an application for you!
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📊 LIVE TRACKER & SPREADSHEETS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-• Google Sheet:   {google_sheet_url}
+{f'• Google Sheet:   {google_sheet_url}' if google_sheet_url else '• Tracker:        Local Database & Excel'}
 • Local Excel:    Job_Applications_Tracker.xlsx
 • Next Action:    Automated follow-up in 4 days if no response
 

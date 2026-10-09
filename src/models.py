@@ -180,6 +180,11 @@ class CandidatePersonalInfo(BaseModel):
     location: str
     current_company: Optional[str] = ""
     current_title: Optional[str] = ""
+    headline: Optional[str] = ""
+    naukri_profile_url: Optional[str] = ""
+    current_ctc: Optional[float] = 0.0
+    expected_ctc: Optional[float] = 0.0
+    notice_period_days: Optional[int] = 30
     linkedin_url: Optional[str] = ""
     github_url: Optional[str] = ""
     portfolio_url: Optional[str] = ""

@@ -608,6 +608,50 @@ class ExcelManager:
         row_idx = ws.max_row
         self._format_row_styling(ws, row_idx, apply_mode, app_status=app.status.value)
 
+        # Also append to any matching custom role sheet created by the user
+        for s_name in list(wb.sheetnames):
+            if s_name not in [TAB_ALL, TAB_NAUKRI, TAB_INDEED, TAB_MANUAL, TAB_OTHER] and s_name not in CATEGORY_SHEETS and not s_name.startswith("ACW"):
+                if s_name.lower() in clean_title:
+                    ws_custom = wb[s_name]
+                    c_dup = False
+                    for cr in ws_custom.iter_rows(min_row=2, values_only=True):
+                        if cr and ((app.app_id and str(cr[0]).strip() == str(app.app_id).strip()) or (clean_comp and str(cr[2]).strip().lower() == clean_comp and str(cr[3]).strip().lower() == clean_title)):
+                            c_dup = True
+                            break
+                    if not c_dup:
+                        ws_custom.append(row_data)
+                        self._format_row_styling(ws_custom, ws_custom.max_row, apply_mode, app_status=app.status.value)
+
+    def ensure_custom_role_sheet(self, role_name: str) -> str:
+        """
+        Creates a dedicated sheet in the Excel workbook for a user-inputted job role if it does not already exist.
+        Returns the sanitized sheet title.
+        """
+        if not role_name or not role_name.strip():
+            return ""
+        import re
+        # Clean title for Excel sheet name limitations (max 31 chars, no invalid characters)
+        clean_title = re.sub(r'[\\/*?:\[\]]', '', role_name.strip())[:31].strip()
+        if not clean_title:
+            return ""
+
+        try:
+            wb = self._load_workbook(data_only=False)
+        except Exception:
+            self._ensure_workbook()
+            wb = self._load_workbook(data_only=False)
+
+        if clean_title not in wb.sheetnames:
+            ws = wb.create_sheet(title=clean_title)
+            ws.append(CATEGORY_HEADERS)
+            self._format_category_header(ws, "1F4E79")
+            wb.save(self.file_path)
+            safe_print(f"[ExcelManager] 📄 Created dedicated sheet for job role '{clean_title}'.")
+        else:
+            wb.close()
+
+        return clean_title
+
     def append_application(self, app: JobApplication, match_pct: float = 85.0, follow_up_date: str = "", chance: str = "High") -> None:
         """
         Appends an application to:

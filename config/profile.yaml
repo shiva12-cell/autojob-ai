@@ -1,16 +1,16 @@
 # Candidate Profile for Job Auto Applier
-# Candidate: Shiva Upadhyay
+# Generic Profile Template
 
 personal_info:
-  first_name: "Shiva"
-  last_name: "Upadhyay"
-  email: "shivaupadhyay8829@gmail.com"
-  phone: "+91 7668559852"
-  location: "Gurugram"
+  first_name: "Job"
+  last_name: "Seeker"
+  email: "candidate@example.com"
+  phone: "+91 9876543210"
+  location: "India / Remote"
   current_company: ""
   current_title: "Data Analyst"
-  linkedin_url: "https://www.linkedin.com/in/shiva-upadhyay"
-  github_url: "https://github.com/shiva12-cell"
+  linkedin_url: "https://www.linkedin.com/in/candidate"
+  github_url: "https://github.com/candidate"
   portfolio_url: ""
 
 work_authorization:
@@ -90,5 +90,5 @@ cover_letter: |
   Thank you for considering my application. I look forward to discussing how my skills align with your goals.
 
   Best regards,
-  Shiva Upadhyay
-  shivaupadhyay8829@gmail.com | +91 7668559852
+  Candidate Name
+  candidate@example.com | +91 9876543210
